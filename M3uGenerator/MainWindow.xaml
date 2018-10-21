@@ -1,0 +1,27 @@
+﻿<Window x:Class="M3uGenerator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:M3uGenerator"
+        mc:Ignorable="d"
+        Title="M3U生成器" Height="450" Width="500"
+        AllowDrop="True" PreviewDragOver="Window_PreviewDragOver" PreviewDrop="Window_PreviewDrop">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top">
+            <Button Content="生成播放列表" DockPanel.Dock="Right" Click="GenerateBtn_Click"/>
+            <Button Content="打开目录" Padding="5" Margin="5,0" DockPanel.Dock="Right" Click="OpenBtn_Click"/>
+            <TextBox x:Name="pathText" IsReadOnly="True"/>
+        </DockPanel>
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" SelectionMode="Single"  SelectionUnit="FullRow"
+                  AllowDrop="True" IsReadOnly="True" CanUserSortColumns="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Album}" Header="专辑"/>
+                <DataGridTextColumn Binding="{Binding DiscTrack}" Header="#"/>
+                <DataGridTextColumn Binding="{Binding Title}" Header="标题"/>
+                <DataGridTextColumn Binding="{Binding Artist}" Header="艺术家"/>
+                <DataGridTextColumn Binding="{Binding FileName}" Header="文件名"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>
