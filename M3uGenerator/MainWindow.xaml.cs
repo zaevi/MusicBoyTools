@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -21,6 +22,28 @@ namespace M3uGenerator
             dataGrid.KeyDown += DataGrid_PreviewKeyDown;
             dataGrid.ItemsSource = FileList;
             Loaded += MainWindow_Loaded;
+            dataGrid.Sorting += DataGrid_Sorting;
+        }
+
+        private void DataGrid_Sorting(object sender, System.Windows.Controls.DataGridSortingEventArgs e)
+        {
+            var property = typeof(Tag).GetProperty(e.Column.SortMemberPath);
+            IEnumerable<Tag> list;
+            ListSortDirection sortDirection;
+            if (e.Column.SortDirection == ListSortDirection.Descending)
+            {
+                list = FileList.OrderBy(t => property.GetValue(t));
+                sortDirection = ListSortDirection.Ascending;
+            }
+            else
+            {
+                list = FileList.OrderByDescending(t => property.GetValue(t));
+                sortDirection = ListSortDirection.Descending;
+            }
+            FileList = new ObservableCollection<Tag>(list);
+            dataGrid.ItemsSource = FileList;
+            e.Column.SortDirection = sortDirection;
+            e.Handled = true;
         }
 
         private void DataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -29,17 +52,12 @@ namespace M3uGenerator
             {
                 foreach (var column in dataGrid.Columns)
                     column.SortDirection = null;
-                e.Handled = true;
-                var idx = dataGrid.SelectedIndex;
-                Tag tag;
+                var idx = FileList.IndexOf(dataGrid.SelectedItem as Tag);
                 if (Keyboard.IsKeyDown(Key.Up) && idx > 0)
-                    tag = dataGrid.Items[idx - 1] as Tag;
+                    FileList.Move(idx - 1, idx);
                 else if (Keyboard.IsKeyDown(Key.Down) && idx < dataGrid.Items.Count - 1)
-                    tag = dataGrid.Items[idx + 1] as Tag;
-                else
-                    return;
-                FileList.Remove(tag);
-                FileList.Insert(idx, tag);
+                    FileList.Move(idx + 1, idx);
+                e.Handled = true;
             }
         }
 
