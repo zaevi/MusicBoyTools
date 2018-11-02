@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Controls;
 
 namespace M3uGenerator
 {
@@ -34,5 +35,8 @@ namespace M3uGenerator
                 sb.AppendLine(GetRelativePath(file, folder));
             File.WriteAllText(m3uPath, sb.ToString());
         }
+
+        public static DataGridCell GetDataGridCell(this DataGridCellInfo cellInfo)
+            => cellInfo.Column?.GetCellContent(cellInfo.Item)?.Parent as DataGridCell;
     }
 }

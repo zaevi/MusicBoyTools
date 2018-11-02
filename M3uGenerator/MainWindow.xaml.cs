@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 
 namespace M3uGenerator
@@ -19,7 +21,7 @@ namespace M3uGenerator
         public MainWindow()
         {
             InitializeComponent();
-            dataGrid.KeyDown += DataGrid_PreviewKeyDown;
+            dataGrid.PreviewKeyDown += DataGrid_PreviewKeyDown;
             dataGrid.ItemsSource = FileList;
             Loaded += MainWindow_Loaded;
             dataGrid.Sorting += DataGrid_Sorting;
@@ -30,20 +32,23 @@ namespace M3uGenerator
             var property = typeof(Tag).GetProperty(e.Column.SortMemberPath);
             IEnumerable<Tag> list;
             ListSortDirection sortDirection;
-            if (e.Column.SortDirection == ListSortDirection.Descending)
-            {
-                list = FileList.OrderBy(t => property.GetValue(t));
-                sortDirection = ListSortDirection.Ascending;
-            }
-            else
+            if (e.Column.SortDirection == ListSortDirection.Ascending)
             {
                 list = FileList.OrderByDescending(t => property.GetValue(t));
                 sortDirection = ListSortDirection.Descending;
+            }
+            else
+            {
+                list = FileList.OrderBy(t => property.GetValue(t));
+                sortDirection = ListSortDirection.Ascending;
             }
             FileList = new ObservableCollection<Tag>(list);
             dataGrid.ItemsSource = FileList;
             e.Column.SortDirection = sortDirection;
             e.Handled = true;
+
+            Action focusAction = () => dataGrid.CurrentCell.GetDataGridCell()?.Focus();
+            dataGrid.Dispatcher.BeginInvoke(DispatcherPriority.Background, focusAction);
         }
 
         private void DataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
