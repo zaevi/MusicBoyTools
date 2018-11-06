@@ -11,6 +11,7 @@
             <Button x:Name="btnImport" Content="从剪切板导入" Click="btnImport_Click" Padding="5"/>
             <Button x:Name="btnExport"  Content="导出标签文件" Click="btnExport_Click" Padding="5" Margin="10,0" IsEnabled="False"/>
             <Button x:Name="btnCopy" Content="复制格式" Click="btnCopy_Click" Padding="5" IsEnabled="False"/>
+            <Button x:Name="btnCover" Content="下载封面" Click="btnCover_Click" Padding="5" Margin="10,0" IsEnabled="False"/>
         </StackPanel>
         <TextBox x:Name="textBox" AcceptsReturn="True" MinHeight="100" MaxHeight="300" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
     </StackPanel>

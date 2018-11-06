@@ -25,6 +25,8 @@ namespace XiamiTags
 
         Tag[] Tags = null;
 
+        string CoverUrl = null;
+
         public MainWindow()
             => InitializeComponent();
 
@@ -66,7 +68,8 @@ namespace XiamiTags
                     textBox.Text = "导入信息失败";
                     return;
                 }
-                btnExport.IsEnabled = btnCopy.IsEnabled = true;
+                btnExport.IsEnabled = btnCopy.IsEnabled = btnCover.IsEnabled = true;
+                CoverUrl = TagBuilder.ParsedCoverUrl;
                 OutputTags();
             }
         }
@@ -82,6 +85,13 @@ namespace XiamiTags
         private void btnCopy_Click(object sender, RoutedEventArgs e)
         {
             Clipboard.SetText(Format);
+        }
+
+        private void btnCover_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog { FileName = System.IO.Path.GetFileName(CoverUrl) };
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                new System.Net.WebClient().DownloadFileAsync(new Uri(CoverUrl), dialog.FileName);
         }
     }
 }

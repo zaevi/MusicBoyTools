@@ -44,6 +44,8 @@ namespace XiamiTags
 
     class TagBuilder
     {
+        public static string ParsedCoverUrl = null;
+
         async public static void LoadFromWeb(string url)
         {
             var web = new HtmlWeb();
@@ -91,6 +93,9 @@ namespace XiamiTags
                     tags.Add(tag);
                 }
             }
+
+            ParsedCoverUrl = rootNode.SelectSingleNode("//*[@id=\"cover_lightbox\"]")?.GetAttributeValue("href", null);
+            if (ParsedCoverUrl.StartsWith("//")) ParsedCoverUrl = "https:" + ParsedCoverUrl;
 
             return tags.ToArray();
         }
