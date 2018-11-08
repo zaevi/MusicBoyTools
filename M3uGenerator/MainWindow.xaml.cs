@@ -91,9 +91,10 @@ namespace M3uGenerator
 
         private void GenerateBtn_Click(object sender, RoutedEventArgs e)
         {
+            var fileName = FileList.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Album))?.Album ?? "playlist";
             var dialog = new Forms.SaveFileDialog()
             {
-                FileName = "playlist.m3u", AddExtension = true, Filter = "M3u文件|*.m3u",
+                FileName = fileName + ".m3u", AddExtension = true, Filter = "M3u文件|*.m3u",
                 DefaultExt = "M3u文件|*.m3u", InitialDirectory=CurrentFolder
             };
             if(dialog.ShowDialog() == Forms.DialogResult.OK)
