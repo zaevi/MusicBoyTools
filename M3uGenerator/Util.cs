@@ -13,7 +13,7 @@ namespace M3uGenerator
             ".dsf", ".dff", ".iso", ".dxd", ".ape",
             ".flac", ".wav", ".aiff", ".aif", ".dts",
             ".mp3", ".wma", ".aac", ".ogg", ".alac",
-            ".mp2", ".m4a", ".ac3" };
+            ".mp2", ".m4a", ".ac3", ".m3u" };
 
         public static bool IsAudio(this string path)
             => AudioExtensions.Contains(Path.GetExtension(path).ToLower());

@@ -23,6 +23,8 @@ namespace M3uGenerator
         public string Path;
         public string FileName => System.IO.Path.GetFileName(Path);
 
+        public Tag() { }
+
         public Tag(TagLib.Tag tag)
         {
             Album = tag.Album;
@@ -44,8 +46,10 @@ namespace M3uGenerator
                     return tag;
                 }
             }
-            catch
+            catch(UnsupportedFormatException)
             {
+                if (path.EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase))
+                    return new Tag { Path = path };
                 return null;
             }
         }
