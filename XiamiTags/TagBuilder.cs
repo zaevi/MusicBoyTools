@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,19 +44,6 @@ namespace XiamiTags
     class TagBuilder
     {
         public static string ParsedCoverUrl = null;
-
-        async public static void LoadFromWeb(string url)
-        {
-            var web = new HtmlWeb();
-            var rootNode = (await web.LoadFromWebAsync(url)).DocumentNode;
-            var bodyNode = rootNode.SelectSingleNode("//*[@id=\"track_list\"]/tbody");
-            if(bodyNode == null)
-            {
-                Console.WriteLine("failed");
-                return;
-            }
-            Load(rootNode);
-        }
 
         public static Tag[] LoadFrom(string html)
         {
