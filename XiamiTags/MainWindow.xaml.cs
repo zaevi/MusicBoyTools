@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using System.Windows;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 
@@ -11,35 +13,33 @@ namespace XiamiTags
     {
         const string Format = @"%album% // %albumartist% // %year% // %genre% // %discnumber% // %track% // %title% // %artist% // %comment%";
 
-        Tag[] Tags = null;
-
-        string CoverUrl = null;
+        Album Album = null;
 
         public MainWindow()
             => InitializeComponent();
 
         private void OutputTags()
         {
-            if (Tags == null) return;
+            if (Album == null) return;
             textBox.Clear();
 
-            textBox.AppendText($"Album: {Tags[0].Album}\r\n");
-            textBox.AppendText($"Artist: {Tags[0].AlbumArtist}\r\n");
-            textBox.AppendText($"Year: {Tags[0].Year}\r\nGrene: {Tags[0].Grene}\r\n");
+            textBox.AppendText($"Album: {Album.Title}\r\n");
+            textBox.AppendText($"Artist: {Album.Artist}\r\n");
+            textBox.AppendText($"Year: {Album.Year}\r\nGrene: {Album.Grene}\r\n");
 
             var disc = "";
-            foreach(var tag in Tags)
+            foreach(var track in Album.Tracks)
             {
-                var d = tag.DiscNumber.Split('/')[0];
+                var d = track.DiscNumber.Split('/')[0];
                 if(d != disc)
                 {
                     disc = d;
                     textBox.AppendText($"\r\n[Disc {d}]\r\n");
                 }
 
-                textBox.AppendText($"[{tag.Track}] {tag.Title}");
-                if (tag.Artist != tag.AlbumArtist) textBox.AppendText($" ({tag.Artist})");
-                if (!string.IsNullOrEmpty(tag.Comment)) textBox.AppendText($" //{tag.Comment}");
+                textBox.AppendText($"[{track.TrackNumber}] {track.Title}");
+                if (track.Artist != track.Album.Artist) textBox.AppendText($" ({track.Artist})");
+                if (!string.IsNullOrEmpty(track.Comment)) textBox.AppendText($" //{track.Comment}");
                 textBox.AppendText("\r\n");
             }
             textBox.ScrollToLine(0);
@@ -50,24 +50,25 @@ namespace XiamiTags
             if(Clipboard.ContainsText())
             {
                 var html = Clipboard.GetText();
-                Tags = TagBuilder.LoadFrom(html);
-                if(Tags == null)
+                Album = TagParser.LoadFrom(html);
+                if(Album == null)
                 {
                     textBox.Text = "导入信息失败";
                     return;
                 }
                 btnExport.IsEnabled = btnCopy.IsEnabled = btnCover.IsEnabled = true;
-                CoverUrl = TagBuilder.ParsedCoverUrl;
                 OutputTags();
             }
         }
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
         {
-            if (Tags == null) return;
+            if (Album == null) return;
             var dialog = new SaveFileDialog { Filter = "文本文件|*.txt" };
-            if(dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                TagBuilder.Save(Tags, dialog.FileName);
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                using (var file = new StreamWriter(dialog.FileName, false, Encoding.Unicode))
+                    foreach (var track in Album.Tracks)
+                        file.WriteLine(track);
         }
 
         private void btnCopy_Click(object sender, RoutedEventArgs e)
@@ -77,9 +78,9 @@ namespace XiamiTags
 
         private void btnCover_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SaveFileDialog { FileName = System.IO.Path.GetFileName(CoverUrl) };
+            var dialog = new SaveFileDialog { FileName = System.IO.Path.GetFileName(Album.CoverUrl) };
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                new System.Net.WebClient().DownloadFileAsync(new Uri(CoverUrl), dialog.FileName);
+                new System.Net.WebClient().DownloadFileAsync(new Uri(Album.CoverUrl), dialog.FileName);
         }
     }
 }
