@@ -2,6 +2,8 @@
 using System.IO;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 
 namespace XiamiTags
@@ -16,33 +18,35 @@ namespace XiamiTags
         Album Album = null;
 
         public MainWindow()
-            => InitializeComponent();
+        { 
+            InitializeComponent();
+        }
 
-        private void OutputTags()
+        private void Refresh()
         {
             if (Album == null) return;
-            textBox.Clear();
-
-            textBox.AppendText($"Album: {Album.Title}\r\n");
-            textBox.AppendText($"Artist: {Album.Artist}\r\n");
-            textBox.AppendText($"Year: {Album.Year}\r\nGrene: {Album.Grene}\r\n");
+            imageBox.Source = new BitmapImage(new Uri(Album.CoverPreviewUrl));
+            albumText.DataContext = Album;
+            listView.Items.Clear();
 
             var disc = "";
             foreach(var track in Album.Tracks)
             {
-                var d = track.DiscNumber.Split('/')[0];
-                if(d != disc)
+                if(disc != track.DiscNumber)
                 {
-                    disc = d;
-                    textBox.AppendText($"\r\n[Disc {d}]\r\n");
+                    disc = track.DiscNumber;
+                    listView.Items.Add(new ListViewItem { Content = $"Disc {disc}", IsEnabled = false });
                 }
 
-                textBox.AppendText($"[{track.TrackNumber}] {track.Title}");
-                if (track.Artist != track.Album.Artist) textBox.AppendText($" ({track.Artist})");
-                if (!string.IsNullOrEmpty(track.Comment)) textBox.AppendText($" //{track.Comment}");
-                textBox.AppendText("\r\n");
+                var sb = new StringBuilder();
+                sb.Append($"{track.TrackNumber} - {track.Title}");
+                if (track.Artist != track.Album.Artist) sb.Append($" ({track.Artist})");
+                if (!string.IsNullOrEmpty(track.Comment)) sb.Append($" //{track.Comment}");
+                var item = new ListViewItem { Content = sb.ToString(), DataContext = track };
+                item.MouseDoubleClick += trackItem_Click;
+                listView.Items.Add(item);
             }
-            textBox.ScrollToLine(0);
+
         }
 
         private void btnImport_Click(object sender, RoutedEventArgs e)
@@ -53,11 +57,11 @@ namespace XiamiTags
                 Album = TagParser.LoadFrom(html);
                 if(Album == null)
                 {
-                    textBox.Text = "导入信息失败";
                     return;
                 }
+                albumInfo.Visibility = Visibility.Visible;
                 btnExport.IsEnabled = btnCopy.IsEnabled = btnCover.IsEnabled = true;
-                OutputTags();
+                Refresh();
             }
         }
 
@@ -74,6 +78,11 @@ namespace XiamiTags
         private void btnCopy_Click(object sender, RoutedEventArgs e)
         {
             Clipboard.SetText(Format);
+        }
+
+        private void trackItem_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText((sender as ListViewItem)?.DataContext.ToString());
         }
 
         private void btnCover_Click(object sender, RoutedEventArgs e)

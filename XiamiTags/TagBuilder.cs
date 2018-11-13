@@ -14,7 +14,7 @@ namespace XiamiTags
         public string Grene { get; set; }
 
         public string CoverUrl { get; set; }
-        public string CoverPreviewUrl => CoverUrl + "@4e_1c_100Q_185w_185h";
+        public string CoverPreviewUrl => CoverUrl + "@4e_1c_100Q_128w_128h";
 
         public List<Track> Tracks { get; } = new List<Track>();
     }

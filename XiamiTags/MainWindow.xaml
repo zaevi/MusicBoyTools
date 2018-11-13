@@ -1,11 +1,10 @@
 ﻿<Window x:Class="XiamiTags.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:XiamiTags"
         mc:Ignorable="d"
-        Title="虾米标签助手" Height="300" Width="400" SizeToContent="Height" ResizeMode="NoResize">
+        Title="虾米标签助手" Height="300" Width="400" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
     <StackPanel Margin="10">
         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
             <Button x:Name="btnImport" Content="从剪切板导入" Click="btnImport_Click" Padding="5"/>
@@ -13,6 +12,16 @@
             <Button x:Name="btnCopy" Content="复制格式" Click="btnCopy_Click" Padding="5" IsEnabled="False"/>
             <Button x:Name="btnCover" Content="下载封面" Click="btnCover_Click" Padding="5" Margin="10,0" IsEnabled="False"/>
         </StackPanel>
-        <TextBox x:Name="textBox" AcceptsReturn="True" MinHeight="100" MaxHeight="300" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+        <DockPanel x:Name="albumInfo" Visibility="Collapsed">
+            <Image x:Name="imageBox" DockPanel.Dock="Left" Height="128" Width="128"/>
+            <TextBlock x:Name="albumText">
+                Album: <Run Text="{Binding Path=Title}"/><LineBreak/>
+                Artist: <Run Text="{Binding Path=Artist}"/><LineBreak/>
+                Year: <Run Text="{Binding Path=Year}"/><LineBreak/>
+                Grene: <Run Text="{Binding Path=Grene}"/>
+            </TextBlock>
+        </DockPanel>
+        <ListView x:Name="listView" BorderThickness="0" MaxHeight="500" MaxWidth="500"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"/>
     </StackPanel>
 </Window>
