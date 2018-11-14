@@ -25,7 +25,7 @@ namespace XiamiTags
         private void Refresh()
         {
             if (Album == null) return;
-            imageBox.Source = new BitmapImage(new Uri(Album.CoverPreviewUrl));
+
             albumText.DataContext = Album;
             listView.Items.Clear();
 
@@ -47,6 +47,8 @@ namespace XiamiTags
                 listView.Items.Add(item);
             }
 
+            Action asyncLoad = () => imageBox.Source = new BitmapImage(new Uri(Album.CoverPreviewUrl));
+            Dispatcher.Invoke(asyncLoad, System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void btnImport_Click(object sender, RoutedEventArgs e)
