@@ -14,7 +14,7 @@
             <TextBox x:Name="pathText" IsReadOnly="True"/>
         </DockPanel>
         <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" SelectionMode="Single"  SelectionUnit="FullRow"
-                  AllowDrop="True" IsReadOnly="True" CanUserSortColumns="True">
+                  AllowDrop="True" IsReadOnly="True" CanUserSortColumns="True" ItemsSource="{Binding Path=FileList}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Album}" Header="专辑"/>
                 <DataGridTextColumn Binding="{Binding DiscTrack}" Header="#"/>

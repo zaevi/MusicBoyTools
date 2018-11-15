@@ -14,15 +14,12 @@ namespace M3uGenerator
 
     public partial class MainWindow : Window
     {
-        ObservableCollection<Tag> FileList = new ObservableCollection<Tag>();
-
-        string CurrentFolder = null;
+        public M3u CurrentM3u = null;
 
         public MainWindow()
         {
             InitializeComponent();
             dataGrid.PreviewKeyDown += DataGrid_PreviewKeyDown;
-            dataGrid.ItemsSource = FileList;
             Loaded += MainWindow_Loaded;
             dataGrid.Sorting += DataGrid_Sorting;
         }
@@ -34,16 +31,15 @@ namespace M3uGenerator
             ListSortDirection sortDirection;
             if (e.Column.SortDirection == ListSortDirection.Ascending)
             {
-                list = FileList.OrderByDescending(t => property.GetValue(t));
+                list = CurrentM3u.FileList.OrderByDescending(t => property.GetValue(t));
                 sortDirection = ListSortDirection.Descending;
             }
             else
             {
-                list = FileList.OrderBy(t => property.GetValue(t));
+                list = CurrentM3u.FileList.OrderBy(t => property.GetValue(t));
                 sortDirection = ListSortDirection.Ascending;
             }
-            FileList = new ObservableCollection<Tag>(list);
-            dataGrid.ItemsSource = FileList;
+            CurrentM3u.FileList = new ObservableCollection<Tag>(list);
             e.Column.SortDirection = sortDirection;
             e.Handled = true;
 
@@ -57,11 +53,11 @@ namespace M3uGenerator
             {
                 foreach (var column in dataGrid.Columns)
                     column.SortDirection = null;
-                var idx = FileList.IndexOf(dataGrid.SelectedItem as Tag);
+                var idx = CurrentM3u.FileList.IndexOf(dataGrid.SelectedItem as Tag);
                 if (Keyboard.IsKeyDown(Key.Up) && idx > 0)
-                    FileList.Move(idx - 1, idx);
+                    CurrentM3u.FileList.Move(idx - 1, idx);
                 else if (Keyboard.IsKeyDown(Key.Down) && idx < dataGrid.Items.Count - 1)
-                    FileList.Move(idx + 1, idx);
+                    CurrentM3u.FileList.Move(idx + 1, idx);
                 e.Handled = true;
             }
         }
@@ -75,8 +71,6 @@ namespace M3uGenerator
         {
             if (!Directory.Exists(path)) return;
 
-            CurrentFolder = path;
-
             var list = new List<Tag>();
 
             foreach(var f in Directory.EnumerateFiles(path))
@@ -85,21 +79,23 @@ namespace M3uGenerator
                 var tag = M3uGenerator.Tag.ReadFrom(f);
                 if (tag != null) list.Add(tag);
             }
-            FileList = new ObservableCollection<Tag>(list.Sorted());
-            dataGrid.ItemsSource = FileList;
+
+            CurrentM3u = new M3u();
+            CurrentM3u.FileList = new ObservableCollection<Tag>(list);
+            DataContext = CurrentM3u;
         }
 
         private void GenerateBtn_Click(object sender, RoutedEventArgs e)
         {
-            var fileName = FileList.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Album))?.Album ?? "playlist";
+            var fileName = CurrentM3u.FileList.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Album))?.Album ?? "playlist";
             var dialog = new Forms.SaveFileDialog()
             {
                 FileName = fileName + ".m3u", AddExtension = true, Filter = "M3u文件|*.m3u",
-                DefaultExt = "M3u文件|*.m3u", InitialDirectory=CurrentFolder
+                DefaultExt = "M3u文件|*.m3u"
             };
             if(dialog.ShowDialog() == Forms.DialogResult.OK)
             {
-                Util.Generate(dialog.FileName, FileList.Select(t => t.Path));
+                Util.Generate(dialog.FileName, CurrentM3u.FileList.Select(t => t.Path)); //TODO
             }
         }
 
