@@ -39,7 +39,7 @@ namespace M3uGenerator
 
         public bool Changed {
             get => _changed;
-            set { _changed = value; OnPropertyChanged(nameof(Changed), nameof(Title)); }
+            set { if (_changed != value) { _changed = value; OnPropertyChanged(nameof(Changed), nameof(Title)); } }
         }
 
         public ObservableCollection<Tag> FileList {
@@ -47,12 +47,15 @@ namespace M3uGenerator
             set
             {
                 _fileList = value;
-                OnPropertyChanged(nameof(FileList), nameof(Changed));
-                _fileList.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Changed));
+                Changed = true;
+                OnPropertyChanged(nameof(FileList));
+                _fileList.CollectionChanged += (s, e) => Changed = true;
             }
         }
 
         public string Title => (Path.GetFileNameWithoutExtension(FilePath) ?? "Untitled") + (Changed ? "*" : "");
+
+        public string FileName => Path.GetFileName(FilePath);
 
         public bool CanSaveAs => FilePath != null;
 

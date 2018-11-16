@@ -22,6 +22,7 @@ namespace M3uGenerator
             dataGrid.PreviewKeyDown += DataGrid_PreviewKeyDown;
             Loaded += MainWindow_Loaded;
             dataGrid.Sorting += DataGrid_Sorting;
+            InitCommands();
         }
 
         private void DataGrid_Sorting(object sender, System.Windows.Controls.DataGridSortingEventArgs e)
@@ -64,7 +65,9 @@ namespace M3uGenerator
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-
+            CurrentM3u = new M3u();
+            DataContext = CurrentM3u;
+            CurrentM3u.Changed = false;
         }
 
         private void LoadFolder(string path)
@@ -83,31 +86,6 @@ namespace M3uGenerator
             CurrentM3u = new M3u();
             CurrentM3u.FileList = new ObservableCollection<Tag>(list);
             DataContext = CurrentM3u;
-        }
-
-        private void GenerateBtn_Click(object sender, RoutedEventArgs e)
-        {
-            var fileName = CurrentM3u.FileList.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Album))?.Album ?? "playlist";
-            var dialog = new Forms.SaveFileDialog()
-            {
-                FileName = fileName + ".m3u", AddExtension = true, Filter = "M3u文件|*.m3u",
-                DefaultExt = "M3u文件|*.m3u"
-            };
-            if(dialog.ShowDialog() == Forms.DialogResult.OK)
-            {
-                Util.Generate(dialog.FileName, CurrentM3u.FileList.Select(t => t.Path)); //TODO
-            }
-        }
-
-        private void OpenBtn_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new Forms.FolderBrowserDialog()
-            {
-                ShowNewFolderButton = false,
-                Description = "选择包含音乐文件的目录"
-            };
-            if (dialog.ShowDialog() == Forms.DialogResult.OK)
-                LoadFolder(dialog.SelectedPath);
         }
 
         private void Window_PreviewDragOver(object sender, DragEventArgs e)
@@ -131,6 +109,41 @@ namespace M3uGenerator
                     LoadFolder(fileNames[0]);
                 }
             }
+        }
+
+        void InitCommands()
+        {
+            CommandBindings.AddRange(new[] {
+                new CommandBinding(ApplicationCommands.New, (s, e) =>
+                {
+                    // New
+                    CurrentM3u = new M3u();
+                    DataContext = CurrentM3u;
+                    CurrentM3u.Changed = false;
+                }),
+                new CommandBinding(ApplicationCommands.Open, (s, e) =>
+                {
+                    // Open
+                }),
+                new CommandBinding(ApplicationCommands.Save, (s, e) =>
+                {
+                    // Save
+                    var fileName = CurrentM3u.FileList.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Album))?.Album ?? "playlist";
+                    var dialog = new Forms.SaveFileDialog()
+                    {
+                        FileName = fileName + ".m3u", AddExtension = true, Filter = "M3u文件|*.m3u",
+                        DefaultExt = "M3u文件|*.m3u"
+                    };
+                    if(dialog.ShowDialog() == Forms.DialogResult.OK)
+                    {
+                        Util.Generate(dialog.FileName, CurrentM3u.FileList.Select(t => t.Path)); //TODO
+                    }
+                }),
+                new CommandBinding(ApplicationCommands.SaveAs, (s, e) =>
+                {
+                    // Save As
+                }, (s, e) => e.CanExecute = CurrentM3u.CanSaveAs),
+            });
         }
     }
 }

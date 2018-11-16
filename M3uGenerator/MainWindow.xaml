@@ -5,22 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:M3uGenerator"
         mc:Ignorable="d"
-        Title="M3U生成器" Height="450" Width="500"
+        Title="{Binding Path=Title, StringFormat =\{0\} - M3U生成器}" Height="450" Width="500"
         AllowDrop="True" PreviewDragOver="Window_PreviewDragOver" PreviewDrop="Window_PreviewDrop">
     <DockPanel>
-        <DockPanel DockPanel.Dock="Top">
-            <Button Content="生成播放列表" DockPanel.Dock="Right" Click="GenerateBtn_Click"/>
-            <Button Content="打开目录" Padding="5" Margin="5,0" DockPanel.Dock="Right" Click="OpenBtn_Click"/>
-            <TextBox x:Name="pathText" IsReadOnly="True"/>
-        </DockPanel>
-        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" SelectionMode="Single"  SelectionUnit="FullRow"
-                  AllowDrop="True" IsReadOnly="True" CanUserSortColumns="True" ItemsSource="{Binding Path=FileList}">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header=" 文件 ">
+                <MenuItem Command="ApplicationCommands.New" Header="新建"/>
+                <MenuItem Command="ApplicationCommands.Open" Header="打开"/>
+                <Separator/>
+                <MenuItem Command="ApplicationCommands.Save" Header="保存"/>
+                <MenuItem Command="ApplicationCommands.SaveAs" Header="另存为"/>
+            </MenuItem>
+        </Menu>
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+                  AllowDrop="True" ItemsSource="{Binding Path=FileList}"
+                  CanUserDeleteRows="True" CanUserAddRows="False" CanUserSortColumns="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Album}" Header="专辑"/>
-                <DataGridTextColumn Binding="{Binding DiscTrack}" Header="#"/>
-                <DataGridTextColumn Binding="{Binding Title}" Header="标题"/>
-                <DataGridTextColumn Binding="{Binding Artist}" Header="艺术家"/>
-                <DataGridTextColumn Binding="{Binding FileName}" Header="文件名"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding Album}" Header="专辑"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding DiscTrack}" Header="#"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding Title}" Header="标题"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding Artist}" Header="艺术家"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding FileName}" Header="文件名"/>
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>
