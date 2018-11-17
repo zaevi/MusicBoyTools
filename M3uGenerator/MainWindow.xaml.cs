@@ -14,7 +14,11 @@ namespace M3uGenerator
 
     public partial class MainWindow : Window
     {
-        public M3u CurrentM3u = null;
+        private M3u _currentM3u = null;
+        public M3u CurrentM3u { get => _currentM3u; set {
+                _currentM3u = value;
+                DataContext = CurrentM3u;
+            } }
 
         public MainWindow()
         {
@@ -65,9 +69,7 @@ namespace M3uGenerator
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            CurrentM3u = new M3u();
-            DataContext = CurrentM3u;
-            CurrentM3u.Changed = false;
+            ApplicationCommands.New.Execute(null, null);
         }
 
         private void LoadFolder(string path)
@@ -76,7 +78,7 @@ namespace M3uGenerator
 
             var list = new List<Tag>();
 
-            foreach(var f in Directory.EnumerateFiles(path))
+            foreach (var f in Directory.EnumerateFiles(path))
             {
                 if (!f.IsAudio()) continue;
                 var tag = M3uGenerator.Tag.ReadFrom(f);
@@ -85,7 +87,6 @@ namespace M3uGenerator
 
             CurrentM3u = new M3u();
             CurrentM3u.FileList = new ObservableCollection<Tag>(list);
-            DataContext = CurrentM3u;
         }
 
         private void Window_PreviewDragOver(object sender, DragEventArgs e)
@@ -102,7 +103,7 @@ namespace M3uGenerator
 
         private void Window_PreviewDrop(object sender, DragEventArgs e)
         {
-            if(e.Data.GetData(DataFormats.FileDrop) is string[] fileNames)
+            if (e.Data.GetData(DataFormats.FileDrop) is string[] fileNames)
             {
                 if (fileNames.Length == 1 && Directory.Exists(fileNames[0]))
                 {
@@ -118,30 +119,72 @@ namespace M3uGenerator
                 {
                     // New
                     CurrentM3u = new M3u();
-                    DataContext = CurrentM3u;
                     CurrentM3u.Changed = false;
                 }),
                 new CommandBinding(ApplicationCommands.Open, (s, e) =>
                 {
                     // Open
+                    var dialog = new Forms.OpenFileDialog()
+                    {
+                        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonMusic),
+                        Filter = "M3u文件|*.m3u",
+                    };
+                    if(dialog.ShowDialog() == Forms.DialogResult.OK)
+                    {
+                        try
+                        {
+                            var m3u = M3u.Load(dialog.FileName);
+                            CurrentM3u = m3u;
+                        }
+                        catch(Exception ex)
+                        {
+                            MessageBox.Show($"{ex.GetType().Name}\r\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
                 }),
                 new CommandBinding(ApplicationCommands.Save, (s, e) =>
                 {
                     // Save
-                    var fileName = CurrentM3u.FileList.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Album))?.Album ?? "playlist";
-                    var dialog = new Forms.SaveFileDialog()
+                    string filePath = null;
+                    if(CurrentM3u.FileName == null)
                     {
-                        FileName = fileName + ".m3u", AddExtension = true, Filter = "M3u文件|*.m3u",
-                        DefaultExt = "M3u文件|*.m3u"
-                    };
-                    if(dialog.ShowDialog() == Forms.DialogResult.OK)
+                        var fileName = CurrentM3u.FileList.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Album))?.Album ?? "playlist";
+                        var dialog = new Forms.SaveFileDialog()
+                        {
+                            FileName = fileName + ".m3u", AddExtension = true, Filter = "M3u文件|*.m3u",
+                            DefaultExt = "M3u文件|*.m3u"
+                        };
+                        if(dialog.ShowDialog() != Forms.DialogResult.OK) return;
+                        filePath = dialog.FileName;
+                    }
+                    try
                     {
-                        Util.Generate(dialog.FileName, CurrentM3u.FileList.Select(t => t.Path)); //TODO
+                        CurrentM3u.Save(filePath);
+                        CurrentM3u.Changed = false;
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show($"{ex.GetType().Name}\r\n{ex.Message}", "保存失败", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }),
                 new CommandBinding(ApplicationCommands.SaveAs, (s, e) =>
                 {
                     // Save As
+                    var dialog = new Forms.SaveFileDialog()
+                    {
+                        FileName = CurrentM3u.FileName, InitialDirectory = Path.GetDirectoryName(CurrentM3u.FilePath),
+                        AddExtension = true, Filter = "M3u文件|*.m3u", DefaultExt = "M3u文件|*.m3u"
+                    };
+                    if(dialog.ShowDialog() != Forms.DialogResult.OK) return;
+                    try
+                    {
+                        CurrentM3u.Save(dialog.FileName);
+                        CurrentM3u.Changed = false;
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show($"{ex.GetType().Name}\r\n{ex.Message}", "保存失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }, (s, e) => e.CanExecute = CurrentM3u.CanSaveAs),
             });
         }

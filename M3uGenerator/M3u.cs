@@ -63,10 +63,35 @@ namespace M3uGenerator
         {
             FileList = new ObservableCollection<Tag>();
         }
-    }
 
-    public static class M3uExtension
-    {
+        public M3u(IEnumerable<Tag> fileList)
+        {
+            FileList = new ObservableCollection<Tag>(fileList);
+        }
 
+        public static M3u Load(string filePath)
+        {
+            var folder = Path.GetDirectoryName(filePath);
+            var collection = new Collection<Tag>();
+            foreach(var relativePath in File.ReadAllLines(filePath))
+            {
+                if (string.IsNullOrWhiteSpace(relativePath)) continue;
+                var fullPath = Path.GetFullPath(Path.Combine(folder, relativePath));
+                collection.Add(Tag.ReadFrom(fullPath));
+            }
+            return new M3u(collection) { FilePath = filePath, Changed = false };
+        }
+
+        public void Save(string filePath=null)
+        {
+            filePath = filePath ?? FilePath
+                ?? throw new ArgumentNullException("filePath", "未指定保存位置");
+            var folder = Path.GetDirectoryName(filePath);
+            var builder = new StringBuilder();
+            foreach (var tag in FileList)
+                builder.AppendLine(Util.GetRelativePath(tag.Path, folder));
+            File.WriteAllText(filePath, builder.ToString());
+            if (FilePath != filePath) FilePath = filePath;
+        }
     }
 }
