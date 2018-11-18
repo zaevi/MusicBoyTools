@@ -72,43 +72,54 @@ namespace M3uGenerator
             ApplicationCommands.New.Execute(null, null);
         }
 
-        private void LoadFolder(string path)
+        private void AddFolder(IEnumerable<string> fileNames)
         {
-            if (!Directory.Exists(path)) return;
-
-            var list = new List<Tag>();
-
-            foreach (var f in Directory.EnumerateFiles(path))
+            foreach(var fileName in fileNames)
             {
-                if (!f.IsAudio()) continue;
-                var tag = M3uGenerator.Tag.ReadFrom(f);
-                if (tag != null) list.Add(tag);
+                if (!fileName.IsAudio()) continue;
+                var tag = M3uGenerator.Tag.ReadFrom(fileName);
+                if (tag != null) CurrentM3u.FileList.Add(tag);
             }
-
-            CurrentM3u = new M3u();
-            CurrentM3u.FileList = new ObservableCollection<Tag>(list);
         }
 
         private void Window_PreviewDragOver(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 if (e.Data.GetData(DataFormats.FileDrop) is string[] fileNames)
-                    if (fileNames.Length == 1 && Directory.Exists(fileNames[0]))
+                {
+                    if (fileNames.Length == 1)
                     {
-                        e.Effects = DragDropEffects.All;
-                        return;
+                        if (fileNames[0].EndsWith(".m3u", StringComparison.OrdinalIgnoreCase)
+                            && CurrentM3u.FilePath == null && CurrentM3u.FileList.Count == 0)
+                        {
+                            e.Effects = DragDropEffects.Copy;
+                            return;
+                        }
                     }
-            e.Effects = DragDropEffects.None;
+                    e.Effects = DragDropEffects.Move;
+                }
         }
 
         private void Window_PreviewDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetData(DataFormats.FileDrop) is string[] fileNames)
             {
-                if (fileNames.Length == 1 && Directory.Exists(fileNames[0]))
+                if(fileNames.Length == 1)
                 {
-                    LoadFolder(fileNames[0]);
+                    if (fileNames[0].EndsWith(".m3u", StringComparison.OrdinalIgnoreCase)
+                        && CurrentM3u.FilePath == null && CurrentM3u.FileList.Count == 0)
+                    {
+                        ApplicationCommands.Open.Execute(fileNames[0], null);
+                        return;
+                    }
+                    else if(Directory.Exists(fileNames[0]))
+                    {
+                        AddFolder(Directory.GetFiles(fileNames[0]));
+                        return;
+                    }
                 }
+                AddFolder(fileNames);
+                return;
             }
         }
 
@@ -124,22 +135,24 @@ namespace M3uGenerator
                 new CommandBinding(ApplicationCommands.Open, (s, e) =>
                 {
                     // Open
-                    var dialog = new Forms.OpenFileDialog()
+                    if(!(e.Parameter is string fileName))
                     {
-                        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonMusic),
-                        Filter = "M3u文件|*.m3u",
-                    };
-                    if(dialog.ShowDialog() == Forms.DialogResult.OK)
+                        var dialog = new Forms.OpenFileDialog()
+                        {
+                            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonMusic),
+                            Filter = "M3u文件|*.m3u",
+                        };
+                        if(dialog.ShowDialog() != Forms.DialogResult.OK) return;
+                        fileName = dialog.FileName;
+                    }
+                    try
                     {
-                        try
-                        {
-                            var m3u = M3u.Load(dialog.FileName);
-                            CurrentM3u = m3u;
-                        }
-                        catch(Exception ex)
-                        {
-                            MessageBox.Show($"{ex.GetType().Name}\r\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
+                        var m3u = M3u.Load(fileName);
+                        CurrentM3u = m3u;
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show($"{ex.GetType().Name}\r\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }),
                 new CommandBinding(ApplicationCommands.Save, (s, e) =>
