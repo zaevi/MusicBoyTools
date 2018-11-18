@@ -19,13 +19,16 @@
         </Menu>
         <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
                   AllowDrop="True" ItemsSource="{Binding Path=FileList}"
-                  CanUserDeleteRows="True" CanUserAddRows="False" CanUserSortColumns="True">
+                  CanUserDeleteRows="True" CanUserAddRows="False" CanUserSortColumns="True"
+                  AlternatingRowBackground="#FFD2D2D2">
             <DataGrid.Columns>
                 <DataGridTextColumn IsReadOnly="True" Binding="{Binding Album}" Header="专辑"/>
                 <DataGridTextColumn IsReadOnly="True" Binding="{Binding DiscTrack}" Header="#"/>
                 <DataGridTextColumn IsReadOnly="True" Binding="{Binding Title}" Header="标题"/>
                 <DataGridTextColumn IsReadOnly="True" Binding="{Binding Artist}" Header="艺术家"/>
                 <DataGridTextColumn IsReadOnly="True" Binding="{Binding FileName}" Header="文件名"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding CreationTime}" Header="创建时间"/>
+                <DataGridTextColumn IsReadOnly="True" Binding="{Binding LastWriteTime}" Header="修改时间"/>
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>

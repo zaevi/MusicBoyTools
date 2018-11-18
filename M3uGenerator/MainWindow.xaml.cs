@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
@@ -27,6 +29,16 @@ namespace M3uGenerator
             Loaded += MainWindow_Loaded;
             dataGrid.Sorting += DataGrid_Sorting;
             InitCommands();
+
+            var menu = new ContextMenu();
+            dataGrid.ContextMenu = menu;
+            var binding = new Binding("Visibility") { Converter = new VisibilityConverter(), Mode = BindingMode.TwoWay };
+            foreach (var column in dataGrid.Columns)
+            {
+                var item = new MenuItem() { Header = column.Header, IsCheckable = true, DataContext=column };
+                item.SetBinding(MenuItem.IsCheckedProperty, binding);
+                menu.Items.Add(item);
+            }
         }
 
         private void DataGrid_Sorting(object sender, System.Windows.Controls.DataGridSortingEventArgs e)
