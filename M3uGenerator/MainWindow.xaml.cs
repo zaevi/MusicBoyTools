@@ -28,6 +28,7 @@ namespace M3uGenerator
             dataGrid.PreviewKeyDown += DataGrid_PreviewKeyDown;
             Loaded += MainWindow_Loaded;
             dataGrid.Sorting += DataGrid_Sorting;
+            Closing += MainWindow_Closing;
             InitCommands();
 
             var menu = new ContextMenu();
@@ -39,6 +40,11 @@ namespace M3uGenerator
                 item.SetBinding(MenuItem.IsCheckedProperty, binding);
                 menu.Items.Add(item);
             }
+        }
+
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        {
+            if (!CheckAndShowSaveMessage()) e.Cancel = true;
         }
 
         private void DataGrid_Sorting(object sender, System.Windows.Controls.DataGridSortingEventArgs e)
@@ -141,12 +147,14 @@ namespace M3uGenerator
                 new CommandBinding(ApplicationCommands.New, (s, e) =>
                 {
                     // New
+                    if(!CheckAndShowSaveMessage()) return;
                     CurrentM3u = new M3u();
                     CurrentM3u.Changed = false;
                 }),
                 new CommandBinding(ApplicationCommands.Open, (s, e) =>
                 {
                     // Open
+                    if(!CheckAndShowSaveMessage()) return;
                     if(!(e.Parameter is string fileName))
                     {
                         var dialog = new Forms.OpenFileDialog()
@@ -212,6 +220,23 @@ namespace M3uGenerator
                     }
                 }, (s, e) => e.CanExecute = CurrentM3u.CanSaveAs),
             });
+        }
+
+        private bool CheckAndShowSaveMessage()
+        {
+            if (CurrentM3u == null || CurrentM3u.Changed) return true;
+            var result = MessageBox.Show("是否要保存当前文件?", "", MessageBoxButton.YesNoCancel);
+            if (result == MessageBoxResult.Cancel)
+                return false;
+            else if(result == MessageBoxResult.Yes)
+            {
+                ApplicationCommands.Save.Execute(null, null);
+                return !CurrentM3u.Changed;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }
