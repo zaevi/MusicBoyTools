@@ -224,7 +224,7 @@ namespace M3uGenerator
 
         private bool CheckAndShowSaveMessage()
         {
-            if (CurrentM3u == null || CurrentM3u.Changed) return true;
+            if (CurrentM3u == null || !CurrentM3u.Changed) return true;
             var result = MessageBox.Show("是否要保存当前文件?", "", MessageBoxButton.YesNoCancel);
             if (result == MessageBoxResult.Cancel)
                 return false;
