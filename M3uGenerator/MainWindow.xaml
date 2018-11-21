@@ -17,7 +17,7 @@
                 <MenuItem Command="ApplicationCommands.SaveAs" Header="另存为"/>
             </MenuItem>
         </Menu>
-        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="FullRow"
                   AllowDrop="True" ItemsSource="{Binding Path=FileList}"
                   CanUserDeleteRows="True" CanUserAddRows="False" CanUserSortColumns="True"
                   AlternatingRowBackground="#FFD2D2D2">

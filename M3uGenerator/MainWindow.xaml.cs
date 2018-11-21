@@ -77,10 +77,13 @@ namespace M3uGenerator
                 foreach (var column in dataGrid.Columns)
                     column.SortDirection = null;
                 var idx = CurrentM3u.FileList.IndexOf(dataGrid.SelectedItem as Tag);
-                if (Keyboard.IsKeyDown(Key.Up) && idx > 0)
-                    CurrentM3u.FileList.Move(idx - 1, idx);
-                else if (Keyboard.IsKeyDown(Key.Down) && idx < dataGrid.Items.Count - 1)
-                    CurrentM3u.FileList.Move(idx + 1, idx);
+                var count = dataGrid.SelectedItems.Count;
+                var idxe = CurrentM3u.FileList.IndexOf(dataGrid.SelectedItems[count-1] as Tag);
+                if (idxe - idx == count - 1)
+                    if (Keyboard.IsKeyDown(Key.Up) && idx > 0)
+                        CurrentM3u.FileList.Move(idx - 1, idx + count - 1);
+                    else if (Keyboard.IsKeyDown(Key.Down) && idx < dataGrid.Items.Count - count)
+                        CurrentM3u.FileList.Move(idx + count, idx);
                 e.Handled = true;
             }
         }
