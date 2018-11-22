@@ -14,7 +14,7 @@
         </StackPanel>
         <DockPanel x:Name="albumInfo" Visibility="Collapsed">
             <Image x:Name="imageBox" DockPanel.Dock="Left" Height="128" Width="128"/>
-            <TextBlock x:Name="albumText">
+            <TextBlock x:Name="albumText" Margin="10,0,0,0">
                 Album: <Run Text="{Binding Path=Title}"/><LineBreak/>
                 Artist: <Run Text="{Binding Path=Artist}"/><LineBreak/>
                 Year: <Run Text="{Binding Path=Year}"/><LineBreak/>
