@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TagLib;
+using System;
 
 namespace M3uGenerator
 {
     public class Tag
     {
-        public bool Selected { get; set; } = true;
-
         public string Album { get; }
 
         public uint Disc { get; }
@@ -20,8 +20,16 @@ namespace M3uGenerator
 
         public string Artist { get; }
 
-        public string Path;
+        private string path;
+        private FileInfo fileInfo;
+
+        public string Path { get => path; set { path = value; fileInfo = new FileInfo(path); } }
+
         public string FileName => System.IO.Path.GetFileName(Path);
+
+        public DateTime CreationTime => fileInfo.CreationTime;
+
+        public DateTime LastWriteTime => fileInfo.LastWriteTime;
 
         public Tag() { }
 
@@ -36,19 +44,17 @@ namespace M3uGenerator
 
         public static Tag ReadFrom(string path)
         {
+            if (!System.IO.File.Exists(path)) return null;
             try
             {
-                using (var file = File.Create(path))
+                using (var file = TagLib.File.Create(path))
                 {
-                    var tag = new Tag(file.Tag);
-                    tag.Path = path;
-
-                    return tag;
+                    return new Tag(file.Tag) { Path = path };
                 }
             }
             catch(UnsupportedFormatException)
             {
-                if (path.EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase))
+                if (path.EndsWith(".m3u", StringComparison.OrdinalIgnoreCase))
                     return new Tag { Path = path };
                 return null;
             }
@@ -57,7 +63,6 @@ namespace M3uGenerator
 
     public static class TagExtensions
     {
-        public static IEnumerable<Tag> Sorted(this IEnumerable<Tag> list)
-            => list.OrderBy(t => t.Album).ThenBy(t => t.Disc).ThenBy(t => t.Track);
+
     }
 }

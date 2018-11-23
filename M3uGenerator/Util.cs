@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace M3uGenerator
@@ -27,16 +29,27 @@ namespace M3uGenerator
             return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
 
-        public static void Generate(string m3uPath, IEnumerable<string> fileNames)
-        {
-            var folder = Path.GetDirectoryName(m3uPath);
-            var sb = new StringBuilder();
-            foreach (var file in fileNames)
-                sb.AppendLine(GetRelativePath(file, folder));
-            File.WriteAllText(m3uPath, sb.ToString());
-        }
-
         public static DataGridCell GetDataGridCell(this DataGridCellInfo cellInfo)
             => cellInfo.Column?.GetCellContent(cellInfo.Item)?.Parent as DataGridCell;
     }
+
+    public class VisibilityConverter : System.Windows.Data.IValueConverter
+    {
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (bool.TryParse(value.ToString(), out var result))
+            {
+                return result ? Visibility.Visible : Visibility.Hidden;
+            }
+            return null;
+        }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is Visibility visibility)
+                return visibility == Visibility.Visible;
+            return false;
+        }
+    }
+
 }
