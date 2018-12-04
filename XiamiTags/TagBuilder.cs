@@ -68,7 +68,7 @@ namespace XiamiTags
                 {
                     var track = new Track() { Album = album, DiscNumber = $"{disc}/{discs}" };
 
-                    track.TrackNumber = trNode.SelectSingleNode("td[2]").InnerText.Trim().PadLeft(2, '0');
+                    track.TrackNumber = trNode.SelectSingleNode("td[2]").InnerText.Trim();
                     var titles = trNode.SelectSingleNode("td[3]").ChildNodes;
                     track.Title = titles[1].InnerText.Trim('\r', '\t', ' ', '\n');
                     track.Artist = titles[2].InnerText.Trim('\r', '\t', ' ', '\n');
@@ -78,6 +78,13 @@ namespace XiamiTags
 
                     album.Tracks.Add(track);
                 }
+            }
+
+            foreach(var d in album.Tracks.GroupBy(t => t.DiscNumber))
+            {
+                var len = d.Last().TrackNumber.Length;
+                foreach (var t in d)
+                    t.TrackNumber = t.TrackNumber.PadLeft(len, '0');
             }
 
             album.CoverUrl = rootNode.SelectSingleNode("//*[@id=\"cover_lightbox\"]")?.GetAttributeValue("href", null);
