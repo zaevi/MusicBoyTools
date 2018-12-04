@@ -7,6 +7,11 @@
         Title="虾米标签助手" Height="300" Width="400" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
     <StackPanel Margin="10">
         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="White"/>
+                </Style>
+            </StackPanel.Resources>
             <Button x:Name="btnImport" Content="从剪切板导入" Click="btnImport_Click" Padding="5"/>
             <Button x:Name="btnExport"  Content="导出标签文件" Click="btnExport_Click" Padding="5" Margin="10,0" IsEnabled="False"/>
             <Button x:Name="btnCopy" Content="复制格式" Click="btnCopy_Click" Padding="5" IsEnabled="False"/>
