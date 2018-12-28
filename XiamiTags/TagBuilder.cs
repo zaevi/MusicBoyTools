@@ -70,8 +70,8 @@ namespace XiamiTags
 
                     track.TrackNumber = trNode.SelectSingleNode("td[2]").InnerText.Trim();
                     var titles = trNode.SelectSingleNode("td[3]").ChildNodes;
-                    track.Title = titles[1].InnerText.Trim('\r', '\t', ' ', '\n');
-                    track.Artist = titles[2].InnerText.Trim('\r', '\t', ' ', '\n');
+                    track.Title = titles[1].InnerText.Trim('\r', '\t', ' ', '\n').Decode();
+                    track.Artist = titles[2].InnerText.Trim('\r', '\t', ' ', '\n').Decode();
                     if (string.IsNullOrWhiteSpace(track.Artist)) track.Artist = album.Artist;
                     if (titles.Count > 3)
                         track.Comment = titles[3].InnerText.Trim('\r', '\t', ' ', '\n');
@@ -105,7 +105,7 @@ namespace XiamiTags
             {
                 var td = tr.Elements("td").ToArray();
                 var key = td[0].InnerText;
-                var value = td[1].InnerText.Trim('\t','\n','\r');
+                var value = td[1].InnerText.Trim('\t','\n','\r').Decode();
                 if (key.StartsWith("艺人")) album.Artist = value;
                 else if (key.StartsWith("专辑风格")) album.Grene = value;
                 else if (key.StartsWith("发行时间")) album.Year = value.Substring(0, 4);
@@ -113,5 +113,11 @@ namespace XiamiTags
 
             return album;
         }
+    }
+
+    static class TagParserExtension
+    {
+        public static string Decode(this string text)
+            => HtmlEntity.DeEntitize(text);
     }
 }
