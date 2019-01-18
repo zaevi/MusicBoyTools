@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -17,9 +19,18 @@ namespace XiamiTags
 
         Album Album = null;
 
+        ContextMenu CoverMenu = new ContextMenu();
+
         public MainWindow()
         { 
             InitializeComponent();
+            imageBox.ContextMenu = CoverMenu;
+            for (int i = 0; i < 3; i++)
+            {
+                var item = new MenuItem();
+                item.Click += CoverMenuItem_Click;
+                CoverMenu.Items.Add(item);
+            }
         }
 
         private void Refresh()
@@ -46,6 +57,11 @@ namespace XiamiTags
                 item.MouseDoubleClick += trackItem_Click;
                 listView.Items.Add(item);
             }
+
+            var ext = Path.GetExtension(Album.CoverUrl);
+            (CoverMenu.Items[0] as MenuItem).Header = $"cover{ext}";
+            (CoverMenu.Items[1] as MenuItem).Header = $"{Album.Title}{ext}";
+            (CoverMenu.Items[2] as MenuItem).Header = Path.GetFileName(Album.CoverUrl);
 
             Action asyncLoad = () => imageBox.Source = new BitmapImage(new Uri(Album.CoverPreviewUrl));
             Dispatcher.Invoke(asyncLoad, System.Windows.Threading.DispatcherPriority.Background);
@@ -89,7 +105,12 @@ namespace XiamiTags
 
         private void btnCover_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SaveFileDialog { FileName = System.IO.Path.GetFileName(Album.CoverUrl) };
+            CoverMenu.IsOpen = true;
+        }
+
+        private void CoverMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog { FileName = (sender as MenuItem).Header.ToString() };
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 new System.Net.WebClient().DownloadFileAsync(new Uri(Album.CoverUrl), dialog.FileName);
         }
